@@ -19,6 +19,9 @@ import org.bukkit.event.EventPriority;
 import org.bukkit.event.HandlerList;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.PlayerDeathEvent;
+import org.bukkit.scoreboard.Team;
+import org.bukkit.scoreboard.Team.Option;
+import org.bukkit.scoreboard.Team.OptionStatus;
 
 import net.md_5.bungee.api.chat.BaseComponent;
 import net.md_5.bungee.api.chat.TextComponent;
@@ -67,9 +70,31 @@ public class PlayerDeathListener implements Listener {
         if (!calcStateFlag(player, plugin.getSendDeathMessageFlag())) {
             return;
         }
-        Set<Player> onlinePlayers = Bukkit.getOnlinePlayers().stream().filter(onlinePlayer -> !calcStateFlag(onlinePlayer, plugin.getReceiveDeathMessageFlag())).collect(Collectors.toSet());
-        for (Player onlinePlayer : onlinePlayers) {
-            onlinePlayer.spigot().sendMessage(deathMessageComponent);
+        Set<Player> onlinePlayers = Bukkit.getOnlinePlayers().stream()
+                .filter(onlinePlayer -> calcStateFlag(onlinePlayer, plugin.getReceiveDeathMessageFlag()))
+                .collect(Collectors.toSet());
+
+        Team team = player.getScoreboard().getEntryTeam(player.getName());
+        if (team != null && team.getOption(Option.DEATH_MESSAGE_VISIBILITY) != OptionStatus.ALWAYS) {
+            if (team.getOption(Option.DEATH_MESSAGE_VISIBILITY) == OptionStatus.FOR_OTHER_TEAMS) {
+                // Hide for other teams or victim
+                for (Player onlinePlayer : onlinePlayers) {
+                    if (!onlinePlayer.equals(player) && onlinePlayer.getScoreboard().getEntryTeam(onlinePlayer.getName()).equals(team)) {
+                        onlinePlayer.spigot().sendMessage(deathMessageComponent);
+                    }
+                }
+            } else if (team.getOption(Option.DEATH_MESSAGE_VISIBILITY) == OptionStatus.FOR_OWN_TEAM) {
+                // Hide for own team
+                for (Player onlinePlayer : onlinePlayers) {
+                    if (!onlinePlayer.getScoreboard().getEntryTeam(onlinePlayer.getName()).equals(team)) {
+                        onlinePlayer.spigot().sendMessage(deathMessageComponent);
+                    }
+                }
+            }
+        } else {
+            for (Player onlinePlayer : onlinePlayers) {
+                onlinePlayer.spigot().sendMessage(deathMessageComponent);
+            }
         }
     }
 
@@ -78,5 +103,4 @@ public class PlayerDeathListener implements Listener {
         ApplicableRegionSet applicableRegionSet = rm.getApplicableRegions(BukkitAdapter.adapt(player.getLocation()).toVector().toBlockPoint());
         return applicableRegionSet.testState(WorldGuardPlugin.inst().wrapPlayer(player), flag);
     }
-
 }
