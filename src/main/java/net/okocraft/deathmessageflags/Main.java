@@ -14,12 +14,12 @@ public class Main extends JavaPlugin {
 	private static Main instance;
 
 	private StateFlag sendDeathMessageFlag;
-    private StateFlag listenDeathMessageFlag;
+    private StateFlag receiveDeathMessageFlag;
 	
 	@Override
 	public void onLoad() {
 		sendDeathMessageFlag = registerStateFlag("send-death-message", true);
-		listenDeathMessageFlag = registerStateFlag("listen-death-message", true);
+		receiveDeathMessageFlag = registerStateFlag("receive-death-message", true);
 	}
 
 	private StateFlag registerStateFlag(String name, boolean def) {
@@ -73,7 +73,7 @@ public class Main extends JavaPlugin {
 		return sendDeathMessageFlag;
 	}
 
-	StateFlag getListenDeathMessageFlag() {
-		return listenDeathMessageFlag;
+	StateFlag getReceiveDeathMessageFlag() {
+		return receiveDeathMessageFlag;
 	}
 }

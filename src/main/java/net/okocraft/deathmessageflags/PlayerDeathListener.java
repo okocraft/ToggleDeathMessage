@@ -67,7 +67,7 @@ public class PlayerDeathListener implements Listener {
         if (!calcStateFlag(player, plugin.getSendDeathMessageFlag())) {
             return;
         }
-        Set<Player> onlinePlayers = Bukkit.getOnlinePlayers().stream().filter(onlinePlayer -> !calcStateFlag(onlinePlayer, plugin.getListenDeathMessageFlag())).collect(Collectors.toSet());
+        Set<Player> onlinePlayers = Bukkit.getOnlinePlayers().stream().filter(onlinePlayer -> !calcStateFlag(onlinePlayer, plugin.getReceiveDeathMessageFlag())).collect(Collectors.toSet());
         for (Player onlinePlayer : onlinePlayers) {
             onlinePlayer.spigot().sendMessage(deathMessageComponent);
         }
