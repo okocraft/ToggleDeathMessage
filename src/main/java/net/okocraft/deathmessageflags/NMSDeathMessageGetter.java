@@ -17,7 +17,7 @@ public final class NMSDeathMessageGetter {
     private static Class<?> iChatBaseComponentClass;
     private static Class<?> chatSerializerClass = null;
 
-    private static Method getJsonDeathMessage = getMethod(chatSerializerClass, String.class, iChatBaseComponentClass);
+    private static Method getJsonDeathMessage;
 
 
     static {
@@ -30,6 +30,7 @@ public final class NMSDeathMessageGetter {
                     chatSerializerClass = inner;
                 }
             }
+            getJsonDeathMessage = getMethod(chatSerializerClass, String.class, iChatBaseComponentClass);
         } catch (ClassNotFoundException e) {
             throw new ExceptionInInitializerError(e);
         }

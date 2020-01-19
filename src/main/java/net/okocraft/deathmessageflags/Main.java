@@ -23,13 +23,6 @@ public class Main extends JavaPlugin {
 	}
 
 	private StateFlag registerStateFlag(String name, boolean def) {
-		try {
-			// If this plugin is already loaded, current state is not onLoad().
-			getInstance();
-			return null;
-		} catch (IllegalStateException ignore) {
-		}
-
 		FlagRegistry registry = WorldGuard.getInstance().getFlagRegistry();
 		try {
 			StateFlag flag = new StateFlag(name, def);
@@ -44,6 +37,7 @@ public class Main extends JavaPlugin {
 			} else {
 				// types don't match - this is bad news! some other plugin conflicts with you
 				// hopefully this never actually happens
+				Bukkit.getPluginManager().disablePlugin(this);
 				return null;
 			}
 		}

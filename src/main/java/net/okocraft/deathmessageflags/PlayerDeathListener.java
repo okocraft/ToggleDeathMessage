@@ -58,18 +58,16 @@ public class PlayerDeathListener implements Listener {
         }
         
         BaseComponent deathMessageComponent = NMSDeathMessageGetter.getDeathMessage(event);
-        player.sendMessage(event.getDeathMessage());
-        player.sendMessage(deathMessageComponent.toLegacyText());
-        if (!event.getDeathMessage().equals(deathMessageComponent.toLegacyText())) {
+        if (!event.getDeathMessage().equals(deathMessageComponent.toPlainText())) {
             deathMessageComponent = new TextComponent(event.getDeathMessage());
         }
 
         event.setDeathMessage(null);
 
-        if (calcStateFlag(player, plugin.getSendDeathMessageFlag())) {
+        if (!calcStateFlag(player, plugin.getSendDeathMessageFlag())) {
             return;
         }
-        Set<Player> onlinePlayers = Bukkit.getOnlinePlayers().stream().filter(onlinePlayer -> calcStateFlag(onlinePlayer, plugin.getListenDeathMessageFlag())).collect(Collectors.toSet());
+        Set<Player> onlinePlayers = Bukkit.getOnlinePlayers().stream().filter(onlinePlayer -> !calcStateFlag(onlinePlayer, plugin.getListenDeathMessageFlag())).collect(Collectors.toSet());
         for (Player onlinePlayer : onlinePlayers) {
             onlinePlayer.spigot().sendMessage(deathMessageComponent);
         }
