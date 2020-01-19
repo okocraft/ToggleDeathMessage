@@ -1,4 +1,4 @@
-package net.okocraft.deathmessages;
+package net.okocraft.deathmessageflags;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -31,7 +31,7 @@ public final class NMSDeathMessageGetter {
                 }
             }
         } catch (ClassNotFoundException e) {
-            e.printStackTrace();
+            throw new ExceptionInInitializerError(e);
         }
     }
 
