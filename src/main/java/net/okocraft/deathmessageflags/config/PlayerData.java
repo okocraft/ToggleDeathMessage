@@ -15,11 +15,11 @@ public final class PlayerData extends CustomConfig {
     }
 
     public boolean isHidingDeathMessage(OfflinePlayer player) {
-        return get().getBoolean("hide-death-message." + player.getUniqueId());
+        return get().getBoolean("hide-death-message." + player.getUniqueId(), false);
     }
 
     public void setHidingDeathMessage(OfflinePlayer player, boolean isHidden) {
-        get().set("hide-death-message." + player.getUniqueId(), isHidden);
+        get().set("hide-death-message." + player.getUniqueId(), isHidden ? true : null);
         save();
     }
 }
