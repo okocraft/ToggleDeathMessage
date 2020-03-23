@@ -93,10 +93,12 @@ public class Main extends JavaPlugin {
 	@Override
 	public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
 		if (sender instanceof Player) {
+			boolean nextState = !PlayerData.getInstance().isHidingDeathMessage((Player) sender);
 			PlayerData.getInstance().setHidingDeathMessage(
 				(Player) sender,
-				!PlayerData.getInstance().isHidingDeathMessage((Player) sender)
+				nextState
 			);
+			sender.sendMessage(nextState ? "§7death message turned §aoff" : "§7death message turned §con");
 		}
 		return true;
 	}
