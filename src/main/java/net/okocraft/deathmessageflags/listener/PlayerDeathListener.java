@@ -60,10 +60,11 @@ public class PlayerDeathListener implements Listener {
     public void onDeath(PlayerDeathEvent event) {
         Player player = event.getEntity();
 
-        if (!player.getWorld().getGameRuleValue(GameRule.SHOW_DEATH_MESSAGES) || event.getDeathMessage() == null || event.getDeathMessage().equals("")) {
+        if (!player.getWorld().getGameRuleValue(GameRule.SHOW_DEATH_MESSAGES) || event.getDeathMessage() == null
+                || event.getDeathMessage().equals("")) {
             return;
         }
-        
+
         BaseComponent deathMessageComponent = NMSDeathMessageGetter.getDeathMessage(event);
         if (!event.getDeathMessage().equals(deathMessageComponent.toPlainText())) {
             deathMessageComponent = new TextComponent(event.getDeathMessage());
@@ -76,42 +77,38 @@ public class PlayerDeathListener implements Listener {
         }
         Set<Player> onlinePlayers = Bukkit.getOnlinePlayers().stream()
                 .filter(onlinePlayer -> calcStateFlag(onlinePlayer, plugin.getReceiveDeathMessageFlag()))
+                .filter(onlinePlayer -> !PlayerData.getInstance().isHidingDeathMessage(onlinePlayer))
                 .collect(Collectors.toSet());
 
         Team team = player.getScoreboard().getEntryTeam(player.getName());
-        OptionStatus deathMessageOption = team.getOption(Option.DEATH_MESSAGE_VISIBILITY);
-        if (team != null && deathMessageOption != OptionStatus.ALWAYS) {
-            if (deathMessageOption == OptionStatus.FOR_OTHER_TEAMS) {
-                // Hide for other teams or victim
-                for (Player onlinePlayer : onlinePlayers) {
-                    if (!onlinePlayer.equals(player) && onlinePlayer.getScoreboard().getEntryTeam(onlinePlayer.getName()).equals(team)) {
-                        sendDeathMessageIfNotHiding(onlinePlayer, deathMessageComponent);
-                    }
-                }
-            } else if (deathMessageOption == OptionStatus.FOR_OWN_TEAM) {
-                // Hide for own team
-                for (Player onlinePlayer : onlinePlayers) {
-                    if (!onlinePlayer.getScoreboard().getEntryTeam(onlinePlayer.getName()).equals(team)) {
-                        sendDeathMessageIfNotHiding(onlinePlayer, deathMessageComponent);
-                    }
-                }
+        if (team != null) {
+            OptionStatus deathMessageOption = team.getOption(Option.DEATH_MESSAGE_VISIBILITY);
+            switch (deathMessageOption) {
+                case ALWAYS:
+                    break;
+                case FOR_OTHER_TEAMS:
+                    // Hide for other teams or victim
+                    onlinePlayers.removeIf(onlinePlayer -> onlinePlayer.equals(player)
+                            || onlinePlayer.getScoreboard().getEntryTeam(onlinePlayer.getName()).equals(team));
+                    break;
+                case FOR_OWN_TEAM:
+                    // Hide for own team
+                    onlinePlayers.removeIf(onlinePlayer -> !onlinePlayer.getScoreboard().getEntryTeam(onlinePlayer.getName()).equals(team));
+                    break;
+                default:
+                    return;
             }
-        } else {
-            for (Player onlinePlayer : onlinePlayers) {
-                sendDeathMessageIfNotHiding(onlinePlayer, deathMessageComponent);
-            }
+        }
+
+        for (Player onlinePlayer : onlinePlayers) {
+            onlinePlayer.spigot().sendMessage(deathMessageComponent);
         }
     }
 
     private boolean calcStateFlag(Player player, StateFlag flag) {
         RegionManager rm = regionContainer.get(BukkitAdapter.adapt(player.getWorld()));
-        ApplicableRegionSet applicableRegionSet = rm.getApplicableRegions(BukkitAdapter.adapt(player.getLocation()).toVector().toBlockPoint());
+        ApplicableRegionSet applicableRegionSet = rm
+                .getApplicableRegions(BukkitAdapter.adapt(player.getLocation()).toVector().toBlockPoint());
         return applicableRegionSet.testState(WorldGuardPlugin.inst().wrapPlayer(player), flag);
-    }
-
-    private void sendDeathMessageIfNotHiding(Player player, BaseComponent deathMessage) {
-        if (!PlayerData.getInstance().isHidingDeathMessage(player)) {
-            player.spigot().sendMessage(deathMessage);
-        }
     }
 }
