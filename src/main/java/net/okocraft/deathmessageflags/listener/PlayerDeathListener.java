@@ -60,11 +60,6 @@ public class PlayerDeathListener implements Listener {
     public void onDeath(PlayerDeathEvent event) {
         Player player = event.getEntity();
 
-        if (PlayerData.getInstance().isHidingDeathMessage(player)) {
-            event.setDeathMessage(null);
-            return;
-        }
-
         if (!player.getWorld().getGameRuleValue(GameRule.SHOW_DEATH_MESSAGES) || event.getDeathMessage() == null || event.getDeathMessage().equals("")) {
             return;
         }
@@ -90,20 +85,20 @@ public class PlayerDeathListener implements Listener {
                 // Hide for other teams or victim
                 for (Player onlinePlayer : onlinePlayers) {
                     if (!onlinePlayer.equals(player) && onlinePlayer.getScoreboard().getEntryTeam(onlinePlayer.getName()).equals(team)) {
-                        onlinePlayer.spigot().sendMessage(deathMessageComponent);
+                        sendDeathMessageIfNotHiding(onlinePlayer, deathMessageComponent);
                     }
                 }
             } else if (deathMessageOption == OptionStatus.FOR_OWN_TEAM) {
                 // Hide for own team
                 for (Player onlinePlayer : onlinePlayers) {
                     if (!onlinePlayer.getScoreboard().getEntryTeam(onlinePlayer.getName()).equals(team)) {
-                        onlinePlayer.spigot().sendMessage(deathMessageComponent);
+                        sendDeathMessageIfNotHiding(onlinePlayer, deathMessageComponent);
                     }
                 }
             }
         } else {
             for (Player onlinePlayer : onlinePlayers) {
-                onlinePlayer.spigot().sendMessage(deathMessageComponent);
+                sendDeathMessageIfNotHiding(onlinePlayer, deathMessageComponent);
             }
         }
     }
@@ -112,5 +107,11 @@ public class PlayerDeathListener implements Listener {
         RegionManager rm = regionContainer.get(BukkitAdapter.adapt(player.getWorld()));
         ApplicableRegionSet applicableRegionSet = rm.getApplicableRegions(BukkitAdapter.adapt(player.getLocation()).toVector().toBlockPoint());
         return applicableRegionSet.testState(WorldGuardPlugin.inst().wrapPlayer(player), flag);
+    }
+
+    private void sendDeathMessageIfNotHiding(Player player, BaseComponent deathMessage) {
+        if (!PlayerData.getInstance().isHidingDeathMessage(player)) {
+            player.spigot().sendMessage(deathMessage);
+        }
     }
 }
