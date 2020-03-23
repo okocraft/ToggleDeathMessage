@@ -1,5 +1,8 @@
 package net.okocraft.deathmessageflags;
 
+import java.util.List;
+import java.util.Objects;
+
 import com.sk89q.worldguard.WorldGuard;
 import com.sk89q.worldguard.protection.flags.Flag;
 import com.sk89q.worldguard.protection.flags.StateFlag;
@@ -7,7 +10,14 @@ import com.sk89q.worldguard.protection.flags.registry.FlagConflictException;
 import com.sk89q.worldguard.protection.flags.registry.FlagRegistry;
 
 import org.bukkit.Bukkit;
+import org.bukkit.command.Command;
+import org.bukkit.command.CommandSender;
+import org.bukkit.command.PluginCommand;
+import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
+
+import net.okocraft.deathmessageflags.config.PlayerData;
+import net.okocraft.deathmessageflags.listener.PlayerDeathListener;
 
 public class Main extends JavaPlugin {
 
@@ -46,6 +56,9 @@ public class Main extends JavaPlugin {
 	@Override
 	public void onEnable() {
 		PlayerDeathListener.start();
+		PluginCommand command = Objects.requireNonNull(getCommand("toggledeathmessage"));
+		command.setExecutor(this);
+		command.setTabCompleter(this);
 	}
 
 	@Override
@@ -69,11 +82,27 @@ public class Main extends JavaPlugin {
 		return instance;
 	}
 
-	StateFlag getSendDeathMessageFlag() {
+	public StateFlag getSendDeathMessageFlag() {
 		return sendDeathMessageFlag;
 	}
 
-	StateFlag getReceiveDeathMessageFlag() {
+	public StateFlag getReceiveDeathMessageFlag() {
 		return receiveDeathMessageFlag;
+	}
+
+	@Override
+	public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
+		if (sender instanceof Player) {
+			PlayerData.getInstance().setHidingDeathMessage(
+				(Player) sender,
+				!PlayerData.getInstance().isHidingDeathMessage((Player) sender)
+			);
+		}
+		return true;
+	}
+
+	@Override
+	public List<String> onTabComplete(CommandSender sender, Command command, String alias, String[] args) {
+		return List.of();
 	}
 }

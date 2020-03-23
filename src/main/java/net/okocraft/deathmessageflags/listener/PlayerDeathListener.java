@@ -1,4 +1,4 @@
-package net.okocraft.deathmessageflags;
+package net.okocraft.deathmessageflags.listener;
 
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -25,6 +25,9 @@ import org.bukkit.scoreboard.Team.OptionStatus;
 
 import net.md_5.bungee.api.chat.BaseComponent;
 import net.md_5.bungee.api.chat.TextComponent;
+import net.okocraft.deathmessageflags.Main;
+import net.okocraft.deathmessageflags.NMSDeathMessageGetter;
+import net.okocraft.deathmessageflags.config.PlayerData;
 
 public class PlayerDeathListener implements Listener {
 
@@ -56,7 +59,13 @@ public class PlayerDeathListener implements Listener {
     @EventHandler(priority = EventPriority.HIGHEST)
     public void onDeath(PlayerDeathEvent event) {
         Player player = event.getEntity();
-        if (!player.getWorld().getGameRuleValue(GameRule.SHOW_DEATH_MESSAGES) || event.getDeathMessage() == null ) {
+
+        if (PlayerData.getInstance().isHidingDeathMessage(player)) {
+            event.setDeathMessage(null);
+            return;
+        }
+
+        if (!player.getWorld().getGameRuleValue(GameRule.SHOW_DEATH_MESSAGES) || event.getDeathMessage() == null || event.getDeathMessage().equals("")) {
             return;
         }
         
@@ -75,15 +84,16 @@ public class PlayerDeathListener implements Listener {
                 .collect(Collectors.toSet());
 
         Team team = player.getScoreboard().getEntryTeam(player.getName());
-        if (team != null && team.getOption(Option.DEATH_MESSAGE_VISIBILITY) != OptionStatus.ALWAYS) {
-            if (team.getOption(Option.DEATH_MESSAGE_VISIBILITY) == OptionStatus.FOR_OTHER_TEAMS) {
+        OptionStatus deathMessageOption = team.getOption(Option.DEATH_MESSAGE_VISIBILITY);
+        if (team != null && deathMessageOption != OptionStatus.ALWAYS) {
+            if (deathMessageOption == OptionStatus.FOR_OTHER_TEAMS) {
                 // Hide for other teams or victim
                 for (Player onlinePlayer : onlinePlayers) {
                     if (!onlinePlayer.equals(player) && onlinePlayer.getScoreboard().getEntryTeam(onlinePlayer.getName()).equals(team)) {
                         onlinePlayer.spigot().sendMessage(deathMessageComponent);
                     }
                 }
-            } else if (team.getOption(Option.DEATH_MESSAGE_VISIBILITY) == OptionStatus.FOR_OWN_TEAM) {
+            } else if (deathMessageOption == OptionStatus.FOR_OWN_TEAM) {
                 // Hide for own team
                 for (Player onlinePlayer : onlinePlayers) {
                     if (!onlinePlayer.getScoreboard().getEntryTeam(onlinePlayer.getName()).equals(team)) {

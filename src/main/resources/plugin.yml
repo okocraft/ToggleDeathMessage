@@ -4,3 +4,14 @@ main: net.okocraft.deathmessageflags.Main
 author: LazyGon
 api-version: '1.14'
 softdepend: ["WorldGuard"]
+
+commands:
+  toggledeathmessage:
+    aliases: ["tdm"]
+    permission: "deathmessageflags.toggle"
+    description: デスメッセージが聞こえるかどうかを切り替えるコマンド。
+
+permissions:
+  deathmessageflags.toggle:
+    default: true
+    description: tdmコマンドの権限
