@@ -23,8 +23,6 @@ import org.bukkit.scoreboard.Team;
 import org.bukkit.scoreboard.Team.Option;
 import org.bukkit.scoreboard.Team.OptionStatus;
 
-import net.md_5.bungee.api.chat.BaseComponent;
-import net.md_5.bungee.api.chat.TextComponent;
 import net.okocraft.deathmessageflags.Main;
 import net.okocraft.deathmessageflags.NMSDeathMessageGetter;
 import net.okocraft.deathmessageflags.config.PlayerData;
