@@ -60,11 +60,16 @@ public final class NMSDeathMessageGetter {
         }
 
         try {
-            Method sendMessage = entityPlayerClass.getMethod("sendMessage", iChatBaseComponentClass, UUID.class);
-            sendMessage.invoke(getEntityPlayer(bukkitPlayer), iChatBaseComponent, new UUID(0L, 0L));
-        } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
-            e.printStackTrace();
-            return;
+            entityPlayerClass.getMethod("sendMessage", iChatBaseComponentClass, UUID.class)
+                    .invoke(getEntityPlayer(bukkitPlayer), iChatBaseComponent, new UUID(0L, 0L));
+        } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e1) {
+            try {
+                entityPlayerClass.getMethod("sendMessage", iChatBaseComponentClass)
+                        .invoke(getEntityPlayer(bukkitPlayer), iChatBaseComponent);
+            } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e2) {
+                e2.printStackTrace();
+                return;
+            }
         }
     }
 
