@@ -38,7 +38,7 @@ public class Main extends JavaPlugin {
 			StateFlag flag = new StateFlag(name, def);
 			registry.register(flag);
 			return flag;
-		} catch (FlagConflictException e) {
+		} catch (FlagConflictException | IllegalStateException e) {
 			// some other plugin registered a flag by the same name already.
 			// you can use the existing flag, but this may cause conflicts - be sure to check type
 			Flag<?> existing = registry.get(name);
