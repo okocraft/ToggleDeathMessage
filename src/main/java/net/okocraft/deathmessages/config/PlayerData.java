@@ -1,17 +1,13 @@
-package net.okocraft.deathmessageflags.config;
+package net.okocraft.deathmessages.config;
 
 import org.bukkit.OfflinePlayer;
 
+import net.okocraft.deathmessages.Main;
+
 public final class PlayerData extends CustomConfig {
 
-    private static final PlayerData INSTANCE = new PlayerData();
-
-    PlayerData() {
-        super("playerdata.yml");
-    }
-
-    public static PlayerData getInstance() {
-        return INSTANCE;
+    public PlayerData(Main plugin) {
+        super(plugin, "playerdata.yml");
     }
 
     public boolean isHidingDeathMessage(OfflinePlayer player) {

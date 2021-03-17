@@ -1,8 +1,8 @@
 name: ${project.artifactId}
 version: ${project.version}
-main: net.okocraft.deathmessageflags.Main
+main: net.okocraft.deathmessages.Main
 author: LazyGon
-api-version: '1.14'
+api-version: '1.16'
 softdepend: ["WorldGuard"]
 
 commands:

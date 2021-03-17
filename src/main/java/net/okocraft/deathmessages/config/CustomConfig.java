@@ -1,4 +1,4 @@
-package net.okocraft.deathmessageflags.config;
+package net.okocraft.deathmessages.config;
 
 import java.io.File;
 import java.io.IOException;
@@ -10,8 +10,7 @@ import java.util.logging.Level;
 
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
-
-import net.okocraft.deathmessageflags.Main;
+import org.bukkit.plugin.Plugin;
 
 /**
  * Class for manipulating yaml files.
@@ -20,12 +19,13 @@ import net.okocraft.deathmessageflags.Main;
  */
 public abstract class CustomConfig {
 
-    private final Main plugin = Main.getInstance();
+    private final Plugin plugin;
     private final File file;
     private final String name;
     private FileConfiguration config;
 
-    CustomConfig(String name) {
+    CustomConfig(Plugin plugin, String name) {
+        this.plugin = plugin;
         this.name = name;
         this.file = new File(plugin.getDataFolder(), this.name);
         reload();
@@ -34,7 +34,8 @@ public abstract class CustomConfig {
         }
     }
 
-    CustomConfig(File file) {
+    CustomConfig(Plugin plugin, File file) {
+        this.plugin = plugin;
         if (!file.isFile()) {
             throw new IllegalArgumentException("file must not be directory");
         }

@@ -1,4 +1,4 @@
-package net.okocraft.deathmessageflags;
+package net.okocraft.deathmessages;
 
 import java.util.List;
 import java.util.Objects;
@@ -16,12 +16,12 @@ import org.bukkit.command.PluginCommand;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
 
-import net.okocraft.deathmessageflags.config.PlayerData;
-import net.okocraft.deathmessageflags.listener.PlayerDeathListener;
+import net.okocraft.deathmessages.config.PlayerData;
 
 public class Main extends JavaPlugin {
 
-	private static Main instance;
+	private PlayerData playerData;
+	private PlayerDeathListener playerDeathListener;
 
 	private StateFlag sendDeathMessageFlag;
     private StateFlag receiveDeathMessageFlag;
@@ -55,7 +55,10 @@ public class Main extends JavaPlugin {
 
 	@Override
 	public void onEnable() {
-		PlayerDeathListener.start();
+		playerData = new PlayerData(this);
+		playerDeathListener = new PlayerDeathListener(this);
+		playerDeathListener.start();
+
 		PluginCommand command = Objects.requireNonNull(getCommand("toggledeathmessage"));
 		command.setExecutor(this);
 		command.setTabCompleter(this);
@@ -63,23 +66,11 @@ public class Main extends JavaPlugin {
 
 	@Override
 	public void onDisable() {
-		PlayerDeathListener.stop();
+		playerDeathListener.stop();
 	};
 
-	/**
-	 * Gets plugin instance.
-	 * 
-	 * @return Instance of DeathMessages plugin.
-	 * @throws IllegalStateException If this plugin is not enabled.
-	 */
-	public static Main getInstance() throws IllegalStateException {
-		if (instance == null) {
-			instance = (Main) Bukkit.getPluginManager().getPlugin("DeathMessageFlags");
-			if (instance == null) {
-				throw new IllegalStateException("Plugin is not enabled!");
-			}
-		}
-		return instance;
+	public PlayerData getPlayerData() {
+		return playerData;
 	}
 
 	public StateFlag getSendDeathMessageFlag() {
@@ -93,8 +84,8 @@ public class Main extends JavaPlugin {
 	@Override
 	public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
 		if (sender instanceof Player) {
-			boolean nextState = !PlayerData.getInstance().isHidingDeathMessage((Player) sender);
-			PlayerData.getInstance().setHidingDeathMessage(
+			boolean nextState = !playerData.isHidingDeathMessage((Player) sender);
+			playerData.setHidingDeathMessage(
 				(Player) sender,
 				nextState
 			);
