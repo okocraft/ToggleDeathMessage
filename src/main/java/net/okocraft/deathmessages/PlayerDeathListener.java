@@ -1,5 +1,6 @@
 package net.okocraft.deathmessages;
 
+import java.util.HashSet;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -61,7 +62,7 @@ public class PlayerDeathListener implements Listener {
         Set<Player> onlinePlayers;
         
         if (calcStateFlag(player, plugin.getImprisonDeathMessageFlag())) {
-            Set<ProtectedRegion> playerRegions = getRegions(player).getRegions();
+            Set<ProtectedRegion> playerRegions = new HashSet<>(getRegions(player).getRegions());
             playerRegions.removeIf(region -> region.getFlag(plugin.getImprisonDeathMessageFlag()) != State.ALLOW);
             onlinePlayers = Bukkit.getOnlinePlayers().stream()
                     .filter(onlinePlayer -> playerRegions.stream().anyMatch(region -> region.contains(
