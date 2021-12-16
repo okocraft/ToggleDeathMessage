@@ -25,11 +25,13 @@ public class Main extends JavaPlugin {
 
 	private StateFlag sendDeathMessageFlag;
     private StateFlag receiveDeathMessageFlag;
+    private StateFlag imprisonDeathMessageFlag;
 	
 	@Override
 	public void onLoad() {
 		sendDeathMessageFlag = registerStateFlag("send-death-message", true);
 		receiveDeathMessageFlag = registerStateFlag("receive-death-message", true);
+		receiveDeathMessageFlag = registerStateFlag("imprison-death-message", false);
 	}
 
 	private StateFlag registerStateFlag(String name, boolean def) {
@@ -48,6 +50,7 @@ public class Main extends JavaPlugin {
 				// types don't match - this is bad news! some other plugin conflicts with you
 				// hopefully this never actually happens
 				Bukkit.getPluginManager().disablePlugin(this);
+				System.out.println("flag is null.");
 				return null;
 			}
 		}
@@ -79,6 +82,10 @@ public class Main extends JavaPlugin {
 
 	public StateFlag getReceiveDeathMessageFlag() {
 		return receiveDeathMessageFlag;
+	}
+
+	public StateFlag getImprisonDeathMessageFlag() {
+		return imprisonDeathMessageFlag;
 	}
 
 	@Override
