@@ -59,17 +59,14 @@ public class PlayerDeathListener implements Listener {
         }
 
         Set<Player> onlinePlayers;
-        plugin.getImprisonDeathMessageFlag().getName();
         
         if (calcStateFlag(player, plugin.getImprisonDeathMessageFlag())) {
-            plugin.getLogger().info(player.getName() + " is in imprisoned death message region.");
             Set<ProtectedRegion> playerRegions = getRegions(player).getRegions();
             playerRegions.removeIf(region -> region.getFlag(plugin.getImprisonDeathMessageFlag()) != State.ALLOW);
             onlinePlayers = Bukkit.getOnlinePlayers().stream()
                     .filter(onlinePlayer -> playerRegions.stream().anyMatch(region -> region.contains(
                             BukkitAdapter.adapt(onlinePlayer.getLocation()).toVector().toBlockPoint()
                     )))
-                    .peek(p -> plugin.getLogger().info(p.getName() + " is in same."))
                     .filter(onlinePlayer -> calcStateFlag(onlinePlayer, plugin.getReceiveDeathMessageFlag()))
                     .filter(onlinePlayer -> !plugin.getPlayerData().isHidingDeathMessage(onlinePlayer))
                     .collect(Collectors.toSet());

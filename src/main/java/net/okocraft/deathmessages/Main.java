@@ -31,7 +31,7 @@ public class Main extends JavaPlugin {
 	public void onLoad() {
 		sendDeathMessageFlag = registerStateFlag("send-death-message", true);
 		receiveDeathMessageFlag = registerStateFlag("receive-death-message", true);
-		receiveDeathMessageFlag = registerStateFlag("imprison-death-message", false);
+		imprisonDeathMessageFlag = registerStateFlag("imprison-death-message", false);
 	}
 
 	private StateFlag registerStateFlag(String name, boolean def) {
