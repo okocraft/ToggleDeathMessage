@@ -1,8 +1,7 @@
-package net.okocraft.deathmessages.config;
+package net.okocraft.toggledeathmessage.config;
 
+import net.okocraft.toggledeathmessage.Main;
 import org.bukkit.OfflinePlayer;
-
-import net.okocraft.deathmessages.Main;
 
 public final class PlayerData extends CustomConfig {
 
