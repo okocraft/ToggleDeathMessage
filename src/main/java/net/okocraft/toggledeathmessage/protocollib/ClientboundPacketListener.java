@@ -38,7 +38,8 @@ public class ClientboundPacketListener extends PacketAdapter {
     }
 
     private void onSystemChatPacket(Player client, String content, boolean overlay, PacketEvent event) {
-        if (GsonComponentSerializer.gson().deserialize(content) instanceof TranslatableComponent translatable
+        if (content != null
+                && GsonComponentSerializer.gson().deserialize(content) instanceof TranslatableComponent translatable
                 && translatable.key().startsWith("death.")
                 && plugin.getPlayerData().isHidingDeathMessage(client)) {
             event.setCancelled(true);
