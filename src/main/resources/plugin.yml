@@ -1,17 +1,17 @@
 name: ${project.artifactId}
 version: ${project.version}
-main: net.okocraft.deathmessages.Main
+main: net.okocraft.toggledeathmessage.Main
 author: LazyGon
-api-version: '1.16'
-softdepend: ["WorldGuard"]
+api-version: '1.19'
+depend: ["ProtocolLib"]
 
 commands:
   toggledeathmessage:
     aliases: ["tdm"]
-    permission: "deathmessageflags.toggle"
+    permission: "toggledeathmessage.toggle"
     description: デスメッセージが聞こえるかどうかを切り替えるコマンド。
 
 permissions:
-  deathmessageflags.toggle:
+  toggledeathmessage.toggle:
     default: true
     description: tdmコマンドの権限
