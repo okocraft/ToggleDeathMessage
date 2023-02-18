@@ -3,7 +3,6 @@ package net.okocraft.toggledeathmessage;
 import java.util.List;
 import java.util.Objects;
 import net.okocraft.toggledeathmessage.config.PlayerData;
-import net.okocraft.toggledeathmessage.protocollib.ProtocolLibHook;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.PluginCommand;
@@ -13,29 +12,18 @@ import org.jetbrains.annotations.NotNull;
 
 public class Main extends JavaPlugin {
 
-	private final ProtocolLibHook protocolLibHook = new ProtocolLibHook(this);
-
 	private PlayerData playerData;
 
 	@Override
 	public void onEnable() {
 		playerData = new PlayerData(this);
 
-		if (!protocolLibHook.registerHandlers()) {
-			throw new RuntimeException("ProtocolLib not found!");
-		}
+		getServer().getPluginManager().registerEvents(new DeathMessageListener(this), this);
 
 		PluginCommand command = Objects.requireNonNull(getCommand("toggledeathmessage"));
 		command.setExecutor(this);
 		command.setTabCompleter(this);
 	}
-
-	@Override
-	public void onDisable() {
-		if (protocolLibHook.hasProtocolLib()) {
-			protocolLibHook.unregisterHandlers();
-		}
-	};
 
 	public PlayerData getPlayerData() {
 		return playerData;
