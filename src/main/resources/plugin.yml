@@ -3,7 +3,6 @@ version: ${project.version}
 main: net.okocraft.toggledeathmessage.Main
 author: LazyGon
 api-version: '1.19'
-softdepend: ["MoreFlags"]
 
 commands:
   toggledeathmessage:
