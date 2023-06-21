@@ -3,6 +3,7 @@ version: ${project.version}
 main: net.okocraft.toggledeathmessage.Main
 author: LazyGon
 api-version: '1.19'
+folia-supported: true
 
 commands:
   toggledeathmessage:
