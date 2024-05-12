@@ -28,6 +28,8 @@
     </properties>
 
     <build>
+        <finalName>${project.name}</finalName>
+
         <resources>
             <resource>
                 <targetPath>.</targetPath>
@@ -41,7 +43,6 @@
                 <artifactId>maven-jar-plugin</artifactId>
                 <version>3.3.0</version>
                 <configuration>
-                    <finalName>${project.name}</finalName>
                     <archive>
                         <manifest>
                             <addDefaultImplementationEntries>true</addDefaultImplementationEntries>
