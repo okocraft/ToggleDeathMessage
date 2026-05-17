@@ -3,7 +3,7 @@ package net.okocraft.toggledeathmessage;
 import java.util.HashSet;
 import java.util.Set;
 import net.kyori.adventure.text.Component;
-import org.bukkit.GameRule;
+import org.bukkit.GameRules;
 import org.bukkit.Statistic;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -32,8 +32,8 @@ public class DeathMessageListener implements Listener {
     @EventHandler(ignoreCancelled = true)
     private void putMetaOnPlayerDeath(PlayerDeathEvent event) {
         Player player = event.getPlayer();
-        Boolean showDeathMessage = player.getWorld().getGameRuleValue(GameRule.SHOW_DEATH_MESSAGES);
-        if (showDeathMessage == null || !showDeathMessage || event.getDeathMessage() == null) {
+        Boolean showDeathMessage = player.getWorld().getGameRuleValue(GameRules.SHOW_DEATH_MESSAGES);
+        if (!showDeathMessage || event.getDeathMessage() == null) {
             return;
         }
 
