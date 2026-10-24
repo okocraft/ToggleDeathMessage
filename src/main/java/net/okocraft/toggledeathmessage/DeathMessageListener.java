@@ -77,6 +77,7 @@ final class DeathMessageListener implements Listener {
         return playerData.isHidingDeathMessage(player) || player.hasMetadata(HIDE_METADATA_KEY);
     }
 
+    @SuppressWarnings("deprecation") // The metadata API is deprecated, but it is the contract with MoreFlags.
     private void clearHideMetadata() {
         for (Player player : plugin.getServer().getOnlinePlayers()) {
             for (MetadataValue value : player.getMetadata(HIDE_METADATA_KEY)) {
