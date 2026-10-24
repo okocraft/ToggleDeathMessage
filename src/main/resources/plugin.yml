@@ -1,17 +1,11 @@
 name: ${project.artifactId}
 version: ${project.version}
-main: net.okocraft.toggledeathmessage.Main
+main: net.okocraft.toggledeathmessage.ToggleDeathMessagePlugin
 author: LazyGon
-api-version: '1.19'
+api-version: '26.1'
 folia-supported: true
-
-commands:
-  toggledeathmessage:
-    aliases: ["tdm"]
-    permission: "toggledeathmessage.toggle"
-    description: デスメッセージが聞こえるかどうかを切り替えるコマンド。
 
 permissions:
   toggledeathmessage.toggle:
     default: true
-    description: tdmコマンドの権限
+    description: Allows to use /toggledeathmessage command.
