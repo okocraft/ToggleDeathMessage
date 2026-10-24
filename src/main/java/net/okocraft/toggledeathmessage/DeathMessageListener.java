@@ -29,7 +29,7 @@ final class DeathMessageListener implements Listener {
      *
      * @param event the player death event
      */
-    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+    @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     public void onPlayerDeath(PlayerDeathEvent event) {
         Component deathMessage = event.deathMessage();
         if (deathMessage == null || !event.getShowDeathMessages()) {
