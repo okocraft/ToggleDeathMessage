@@ -3,7 +3,7 @@
 
     <groupId>net.okocraft.toggledeathmessage</groupId>
     <artifactId>ToggleDeathMessage</artifactId>
-    <version>4.0.0-SNAPSHOT</version>
+    <version>4.0.0</version>
 
     <repositories>
         <repository>
