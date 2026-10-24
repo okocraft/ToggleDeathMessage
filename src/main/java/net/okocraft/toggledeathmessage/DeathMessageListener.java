@@ -8,10 +8,17 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.PlayerDeathEvent;
+import org.bukkit.metadata.MetadataValue;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.scoreboard.Team;
 
 final class DeathMessageListener implements Listener {
+
+    /**
+     * Metadata key set by other plugins (e.g. MoreFlags) on players who must not receive the current death message.
+     * It is consumed (removed from every online player) at the end of each death event handled here.
+     */
+    private static final String HIDE_METADATA_KEY = "no_see_death_message";
 
     private final Plugin plugin;
     private final PlayerData playerData;
@@ -31,20 +38,28 @@ final class DeathMessageListener implements Listener {
      */
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     public void onPlayerDeath(PlayerDeathEvent event) {
+        try {
+            filterDeathMessage(event);
+        } finally {
+            clearHideMetadata();
+        }
+    }
+
+    private void filterDeathMessage(PlayerDeathEvent event) {
         Component deathMessage = event.deathMessage();
         if (deathMessage == null || !event.getShowDeathMessages()) {
             return;
         }
 
         var onlinePlayers = plugin.getServer().getOnlinePlayers();
-        if (onlinePlayers.stream().noneMatch(playerData::isHidingDeathMessage)) {
+        if (onlinePlayers.stream().noneMatch(this::isHiding)) {
             return;
         }
 
         Player victim = event.getPlayer();
         List<Player> recipients = new ArrayList<>(onlinePlayers.size());
         for (Player player : onlinePlayers) {
-            if (!playerData.isHidingDeathMessage(player) && canSeeByTeamRule(victim, player)) {
+            if (!isHiding(player) && canSeeByTeamRule(victim, player)) {
                 recipients.add(player);
             }
         }
@@ -56,6 +71,19 @@ final class DeathMessageListener implements Listener {
 
         plugin.getServer().getConsoleSender().sendMessage(deathMessage);
         recipients.forEach(player -> player.sendMessage(deathMessage));
+    }
+
+    private boolean isHiding(Player player) {
+        return playerData.isHidingDeathMessage(player) || player.hasMetadata(HIDE_METADATA_KEY);
+    }
+
+    @SuppressWarnings("deprecation") // The metadata API is deprecated, but it is the contract with MoreFlags.
+    private void clearHideMetadata() {
+        for (Player player : plugin.getServer().getOnlinePlayers()) {
+            for (MetadataValue value : player.getMetadata(HIDE_METADATA_KEY)) {
+                player.removeMetadata(HIDE_METADATA_KEY, value.getOwningPlugin());
+            }
+        }
     }
 
     /**
