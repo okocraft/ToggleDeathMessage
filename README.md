@@ -1,7 +1,7 @@
 ToggleDeathMessage, to control death message visibility.
 
-Minecraft version must be 26.1 and up. Can be installed on spigot server.
+Requires Paper (or Folia) 26.1 and up. Spigot is not supported.
 
-There is only one Command:
-* `/toggledeathmessage <on|off>`
-  * Change death message visibility for you only.
+There is only one command (alias: `/tdm`, permission: `toggledeathmessage.toggle`):
+* `/toggledeathmessage [on|off]`
+  * Changes death message visibility for you only. Toggles when no argument is given.

@@ -1,127 +1,79 @@
 package net.okocraft.toggledeathmessage;
 
-import java.util.HashSet;
-import java.util.Set;
+import java.util.ArrayList;
+import java.util.List;
 import net.kyori.adventure.text.Component;
-import org.bukkit.GameRules;
-import org.bukkit.Statistic;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.PlayerDeathEvent;
-import org.bukkit.event.player.PlayerStatisticIncrementEvent;
-import org.bukkit.metadata.FixedMetadataValue;
-import org.bukkit.metadata.MetadataValue;
+import org.bukkit.plugin.Plugin;
 import org.bukkit.scoreboard.Team;
 
-public class DeathMessageListener implements Listener {
+final class DeathMessageListener implements Listener {
 
-    public static final String METADATA_KEY = "no_see_death_message";
+    private final Plugin plugin;
+    private final PlayerData playerData;
 
-    private final Main plugin;
-
-    private final MetadataValue noSeeMeta;
-
-    public DeathMessageListener(Main plugin) {
+    DeathMessageListener(Plugin plugin, PlayerData playerData) {
         this.plugin = plugin;
-        this.noSeeMeta = new FixedMetadataValue(plugin, null);
-    }
-
-    @SuppressWarnings("deprecation")
-    @EventHandler(ignoreCancelled = true)
-    private void putMetaOnPlayerDeath(PlayerDeathEvent event) {
-        Player player = event.getPlayer();
-        Boolean showDeathMessage = player.getWorld().getGameRuleValue(GameRules.SHOW_DEATH_MESSAGES);
-        if (!showDeathMessage || event.getDeathMessage() == null) {
-            return;
-        }
-
-        plugin.getServer().getOnlinePlayers().forEach(p -> {
-            if (plugin.getPlayerData().isHidingDeathMessage(p)) {
-                p.setMetadata(METADATA_KEY, noSeeMeta);
-            }
-        });
-
+        this.playerData = playerData;
     }
 
     /**
-     * Filters player death message without protocollib.<br>
-     * This method will have some internal side effects since it removes original death message and resend it.<br>
-     * For example:
-     * <ul>
-     * <li>Death reason displayed on death screen will disappear</li>
-     * <li>Break plugins hiding or modifying death messages with same way.</li>
-     * </ul>
+     * Cancels the vanilla broadcast and re-sends the death message only to players who have not hidden it.
+     * <p>
+     * The death screen keeps the original message through {@link PlayerDeathEvent#deathScreenMessageOverride(Component)}.
+     * This may conflict with other plugins that hide or modify death messages in the same way.
      *
-     * @param event player death event.
+     * @param event the player death event
      */
-    @SuppressWarnings("deprecation")
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
-    public void filterMessageOnPlayerDeath(PlayerDeathEvent event) {
-        if (event.getDeathMessage() == null) {
+    public void onPlayerDeath(PlayerDeathEvent event) {
+        Component deathMessage = event.deathMessage();
+        if (deathMessage == null || !event.getShowDeathMessages()) {
             return;
         }
 
-        Set<Player> onlinePlayers = new HashSet<>(plugin.getServer().getOnlinePlayers());
-        onlinePlayers.removeIf(p -> p.hasMetadata(METADATA_KEY));
-        if (onlinePlayers.isEmpty()) {
-            event.setDeathMessage(null);
+        var onlinePlayers = plugin.getServer().getOnlinePlayers();
+        if (onlinePlayers.stream().noneMatch(playerData::isHidingDeathMessage)) {
             return;
         }
 
-        Player player = event.getEntity();
-        Team team = player.getScoreboard().getPlayerTeam(player);
-        if (team != null) {
-            Team.OptionStatus deathMessageOption = team.getOption(Team.Option.DEATH_MESSAGE_VISIBILITY);
-            switch (deathMessageOption) {
-                case FOR_OTHER_TEAMS:
-                    // Hide for other teams or victim
-                    onlinePlayers.removeIf(onlinePlayer -> onlinePlayer.equals(player)
-                            || team.equals(onlinePlayer.getScoreboard().getEntryTeam(onlinePlayer.getName())));
-                    break;
-                case FOR_OWN_TEAM:
-                    // Hide for own team
-                    onlinePlayers.removeIf(onlinePlayer -> !team.equals(onlinePlayer.getScoreboard().getEntryTeam(onlinePlayer.getName())));
-                    break;
-                case ALWAYS:
-                default:
-                    break;
+        Player victim = event.getPlayer();
+        List<Player> recipients = new ArrayList<>(onlinePlayers.size());
+        for (Player player : onlinePlayers) {
+            if (!playerData.isHidingDeathMessage(player) && canSeeByTeamRule(victim, player)) {
+                recipients.add(player);
             }
         }
 
-        try {
-            // Paper
-            Component deathMessage = event.deathMessage();
-            if (deathMessage == null) {
-                return;
-            }
-            event.deathMessage(null);
-            for (Player onlinePlayer : onlinePlayers) {
-                onlinePlayer.sendMessage(deathMessage);
-            }
-        } catch (NoClassDefFoundError | NoSuchMethodError e) {
-            // Spigot
-            String deathMessage = event.getDeathMessage();
-            if (deathMessage == null) {
-                return;
-            }
-            event.setDeathMessage(null);
-            for (Player onlinePlayer : onlinePlayers) {
-                onlinePlayer.sendMessage(deathMessage);
-            }
+        if (event.deathScreenMessageOverride() == null) {
+            event.deathScreenMessageOverride(deathMessage);
         }
+        event.deathMessage(null);
+
+        plugin.getServer().getConsoleSender().sendMessage(deathMessage);
+        recipients.forEach(player -> player.sendMessage(deathMessage));
     }
 
     /**
-     * Triggers removing meta AFTER player death event listener with MONITOR priority.
-     *
-     * @param event event when fired player's statistic is changed.
+     * Reproduces vanilla's handling of the {@code deathMessageVisibility} team option.
      */
-    @EventHandler(priority = EventPriority.LOWEST)
-    private void onPlayerStatisticIncrement(PlayerStatisticIncrementEvent event) {
-        if (event.getStatistic() == Statistic.DEATHS) {
-            plugin.getServer().getOnlinePlayers().forEach(p -> p.removeMetadata(METADATA_KEY, plugin));
+    private boolean canSeeByTeamRule(Player victim, Player viewer) {
+        Team team = victim.getScoreboard().getEntryTeam(victim.getName());
+        if (team == null) {
+            return true;
         }
+
+        return switch (team.getOption(Team.Option.DEATH_MESSAGE_VISIBILITY)) {
+            case ALWAYS -> true;
+            case NEVER -> false;
+            // Hidden for other teams: only the victim's teammates (excluding the victim) can see it.
+            case FOR_OTHER_TEAMS -> !viewer.equals(victim) && team.hasEntry(viewer.getName());
+            // Hidden for own team: only players outside the victim's team can see it.
+            case FOR_OWN_TEAM -> !team.hasEntry(viewer.getName());
+        };
     }
 }
